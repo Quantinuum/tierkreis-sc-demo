@@ -1,0 +1,30 @@
+default_storage_name = "file"
+default_executor_name = "subprocess"
+
+[asset_storage.file]
+type = "File"
+asset_dir = "~/.tierkreis/assets"
+
+[asset_storage.memory]
+type = "Memory"
+
+[executors.subprocess]
+type = "Subprocess"
+subprocess_storage_name = "file"
+output_storage_name = "file"
+
+[executors.memory]
+type = "Memory"
+output_storage_name = "memory"
+
+[runtime_state]
+type = "Memory"
+
+[logging_config]
+log_file = "~/.tierkreis/tierkreis.log"
+log_format = "compact"
+log_level = "info"
+service_name = "tierkreis"
+
+[resources]
+paths = []

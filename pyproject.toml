@@ -1,0 +1,24 @@
+[project]
+name = "tierkreis-sc-demo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Philipp Seitz", email = "philipp.seitz@quantinuum.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "tierkreis",
+    "tkr-example-worker-impl",
+]
+
+[project.scripts]
+tierkreis-sc-demo = "tierkreis_sc_demo:main"
+
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+tierkreis = { path = "../tierkreis/tierkreis", editable = true }
+tkr-example-worker-impl = { path = "tkr/workers/example_worker", editable = true }
