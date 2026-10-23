@@ -1,0 +1,18 @@
+[project]
+name = "tkr-fmo-quantum-worker-impl"
+version = "0.1.0"
+description = "pUCCD circuit preparation and local or QFw measurements"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["tierkreis", "tierkreis-sc-demo", "tkr-fmo-quantum-worker", "numpy>=2.3", "qiskit>=2.0", "qiskit-aer>=0.17"]
+
+[tool.uv.sources]
+tierkreis-sc-demo = { workspace = true }
+tkr-fmo-quantum-worker = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+tkr-fmo-quantum-worker = "tkr_fmo_quantum_worker_impl.main:main"

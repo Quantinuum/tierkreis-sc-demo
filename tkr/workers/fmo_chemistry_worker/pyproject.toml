@@ -1,0 +1,18 @@
+[project]
+name = "tkr-fmo-chemistry-worker-impl"
+version = "0.1.0"
+description = "FMO molecular integrals, energy contraction and orbital optimization"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["tierkreis", "tierkreis-sc-demo", "tkr-fmo-chemistry-worker", "numpy>=2.3", "scipy==1.18.1", "pyscf>=2.13"]
+
+[tool.uv.sources]
+tierkreis-sc-demo = { workspace = true }
+tkr-fmo-chemistry-worker = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+tkr-fmo-chemistry-worker = "tkr_fmo_chemistry_worker_impl.main:main"
