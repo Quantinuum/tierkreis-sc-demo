@@ -1,10 +1,8 @@
 {
-  "example": "He2",
   "fcidump": "examples/He4/He1-4.FCIDUMP-2-1",
   "settings": {
     "amplitude_budget": 1000,
     "orbital_budget": 1000,
     "macro_budget": 20
-  },
-  "timeout_seconds": 86400
+  }
 }

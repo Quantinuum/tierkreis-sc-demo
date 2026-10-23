@@ -1,9 +1,7 @@
 {
-  "example": "He",
   "settings": {
     "amplitude_tolerance": 1e-4,
     "amplitude_budget": 1000,
     "orbital_budget": 1000
-  },
-  "timeout_seconds": 86400
+  }
 }
