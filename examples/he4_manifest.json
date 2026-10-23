@@ -1,0 +1,16 @@
+{
+  "reference_revision": "afcd8f7cda176114c4ce6db2cd9f92d79bc2d9a0",
+  "directory": "examples/He4",
+  "fragments": [
+    {"identifier": "m1", "monomers": ["m1"], "file": "He1-4.FCIDUMP-1-1"},
+    {"identifier": "m2", "monomers": ["m2"], "file": "He1-4.FCIDUMP-1-2"},
+    {"identifier": "m3", "monomers": ["m3"], "file": "He1-4.FCIDUMP-1-3"},
+    {"identifier": "m4", "monomers": ["m4"], "file": "He1-4.FCIDUMP-1-4"},
+    {"identifier": "d1", "monomers": ["m3", "m1"], "file": "He1-4.FCIDUMP-2-1"},
+    {"identifier": "d2", "monomers": ["m3", "m2"], "file": "He1-4.FCIDUMP-2-2"},
+    {"identifier": "d3", "monomers": ["m4", "m1"], "file": "He1-4.FCIDUMP-2-3"},
+    {"identifier": "d4", "monomers": ["m4", "m2"], "file": "He1-4.FCIDUMP-2-4"},
+    {"identifier": "d5", "monomers": ["m4", "m3"], "file": "He1-4.FCIDUMP-2-5"},
+    {"identifier": "d6", "monomers": ["m2", "m1"], "file": "He1-4.FCIDUMP-2-6"}
+  ]
+}
