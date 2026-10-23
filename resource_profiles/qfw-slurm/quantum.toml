@@ -1,0 +1,24 @@
+executor = "slurm"
+nodes = 1
+cpu = 1
+memory = "4Gi"
+walltime = "01:00:00"
+
+# One commuting measurement group per worker; QFw enforces reservation bounds.
+[extra_scheduler_args]
+"--ntasks" = "1"
+"--account" = "qfw-test"
+"--output" = ".runtime/slurm-%j.out"
+"--qpu" = "nwqsim"
+"--workload-kind" = "hybrid"
+"--circ-count" = "1"
+"--max-qubits" = "10"
+"--max-depth" = "1000"
+"--max-shots" = "4096"
+
+[env]
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://otel-collector:4317"
+TKR_QUANTUM_BACKEND = "qfw"
+OMP_NUM_THREADS = "1"
+OPENBLAS_NUM_THREADS = "1"
+MKL_NUM_THREADS = "1"

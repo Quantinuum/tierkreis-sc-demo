@@ -1,0 +1,16 @@
+executor = "slurm"
+nodes = 1
+cpu = 1
+memory = "4Gi"
+walltime = "01:00:00"
+
+[extra_scheduler_args]
+"--ntasks" = "1"
+"--account" = "qfw-test"
+"--output" = ".runtime/slurm-%j.out"
+
+[env]
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://otel-collector:4317"
+OMP_NUM_THREADS = "1"
+OPENBLAS_NUM_THREADS = "1"
+MKL_NUM_THREADS = "1"

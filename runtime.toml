@@ -3,7 +3,7 @@ default_executor_name = "subprocess"
 
 [asset_storage.file]
 type = "File"
-asset_dir = "~/.tierkreis/assets"
+asset_dir = ".runtime/assets"
 
 [asset_storage.memory]
 type = "Memory"
@@ -17,14 +17,29 @@ output_storage_name = "file"
 type = "Memory"
 output_storage_name = "memory"
 
+[executors.slurm]
+type = "Hpc"
+scheduler = "slurm"
+hpc_storage_name = "file"
+output_storage_name = "file"
+poll_interval_secs = 1
+resources = { nodes = 1, cores_per_node = 1 }
+
+[executors.slurm.worker_commands]
+fmo_quantum_worker = ["bash", "tkr/workers/fmo_quantum_worker/launch.sh"]
+
 [runtime_state]
-type = "Memory"
+type = "Sqlite"
+memory = false
+url = ".runtime/workflows.sqlite"
 
 [logging_config]
-log_file = "~/.tierkreis/tierkreis.log"
+log_file = ".runtime/tierkreis.log"
 log_format = "compact"
 log_level = "info"
-service_name = "tierkreis"
+service_name = "fmo-vqe"
+service_namespace = "openqse"
+otel_endpoint = "http://127.0.0.1:4317"
 
 [resources]
-paths = []
+paths = ["resource_profiles"]
