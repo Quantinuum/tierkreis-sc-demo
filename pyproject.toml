@@ -1,24 +1,44 @@
 [project]
 name = "tierkreis-sc-demo"
 version = "0.1.0"
-description = "Add your description here"
+description = "Rust-orchestrated typed Tierkreis FMO2 orbital-optimized pUCCD application"
 readme = "README.md"
 authors = [
     { name = "Philipp Seitz", email = "philipp.seitz@quantinuum.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "tierkreis",
-    "tkr-example-worker-impl",
+    "tkr-fmo-control-worker-impl",
+    "tkr-fmo-chemistry-worker-impl",
+    "tkr-fmo-quantum-worker-impl",
 ]
 
-[project.scripts]
-tierkreis-sc-demo = "tierkreis_sc_demo:main"
+[dependency-groups]
+dev = ["tierkreis[stubs]", "pyright"]
 
 [build-system]
-requires = ["uv_build>=0.12.12,<0.13.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fmo_vqe", "tkr"]
+exclude = ["tkr/workers/**"]
+
+[tool.uv.workspace]
+members = ["tkr/workers/fmo_*", "tkr/workers/fmo_*/api"]
 
 [tool.uv.sources]
 tierkreis = { path = "../tierkreis/tierkreis", editable = true }
-tkr-example-worker-impl = { path = "tkr/workers/example_worker", editable = true }
+tkr-fmo-control-worker = { workspace = true }
+tkr-fmo-chemistry-worker = { workspace = true }
+tkr-fmo-quantum-worker = { workspace = true }
+tkr-fmo-control-worker-impl = { workspace = true }
+tkr-fmo-chemistry-worker-impl = { workspace = true }
+tkr-fmo-quantum-worker-impl = { workspace = true }
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint.per-file-ignores]
+"tkr/graphs/shared.py" = ["F821", "UP040"]
