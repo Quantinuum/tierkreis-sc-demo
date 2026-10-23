@@ -1,0 +1,54 @@
+x-fmo-volumes: &fmo-volumes
+  - ${TKR_PROJECT_ROOT:?set TKR_PROJECT_ROOT}:/workspace/qfw-container-base/tierkreis-sc-demo
+  - fmo_home:/workspace/home
+  - type: volume
+    source: fmo_runtime
+    target: /workspace/qfw-container-base/tierkreis-sc-demo/.runtime
+    volume:
+      nocopy: true
+
+services:
+  slurmdbd:
+    volumes: *fmo-volumes
+  slurmctld:
+    volumes: *fmo-volumes
+    ports:
+      - "127.0.0.1:3000:3000"
+  slurmrestd:
+    volumes: *fmo-volumes
+  c1:
+    volumes: *fmo-volumes
+  c2:
+    volumes: *fmo-volumes
+  c3:
+    volumes: *fmo-volumes
+  c4:
+    volumes: *fmo-volumes
+  c5:
+    volumes: *fmo-volumes
+  c6:
+    volumes: *fmo-volumes
+  c7:
+    volumes: *fmo-volumes
+  c8:
+    volumes: *fmo-volumes
+  nwqsim-head:
+    volumes: *fmo-volumes
+  nwqsim-worker-1:
+    volumes: *fmo-volumes
+  nwqsim-worker-2:
+    volumes: *fmo-volumes
+  iqm-head:
+    volumes: *fmo-volumes
+  shim-head:
+    volumes: *fmo-volumes
+  ibm-156-nh:
+    volumes: *fmo-volumes
+  aws:
+    volumes: *fmo-volumes
+  fake-iqm-head:
+    volumes: *fmo-volumes
+
+volumes:
+  fmo_home:
+  fmo_runtime:
