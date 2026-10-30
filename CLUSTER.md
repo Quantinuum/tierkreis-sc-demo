@@ -13,16 +13,11 @@ The operator must provide:
 - Working Slurm allocations and an authorized user/account.
 - QFw activation, directory, gateway, scheduler integration and selected QPM.
 - A compatible Linux Python environment with QFw and access to shared storage.
-- Compatible Tierkreis Rust runtime/Python bindings and viewer assets, including
-  support for the generic `tkr serve --host` command.
+- A platform supported by the `tierkreis==3.0.0rc0` wheel.
 - Optionally an OTLP/gRPC collector accessible to workers on port 4317.
 
-For this guide, the intended Tierkreis release includes the frontend/server
-fixes and `tierkreis._tierkreis.flush_traces`. The current source dependency is
-a temporary exception described below. It must also include `tkr run --profile`,
-`--timeout`, CLI trace flushing and the relative file-storage-root fix.
-No Tierkreis or cluster patches are
-applied by this repository.
+This project installs the Tierkreis 3.0 release candidate from PyPI. No
+Tierkreis source checkout or application-specific Tierkreis patch is needed.
 
 ## 2. Local virtual cluster: commands you run
 
@@ -113,13 +108,11 @@ Clone this project onto shared Linux storage, accessible at the same absolute
 path on the coordinator and compute nodes. All ten FCIDUMPs are already in
 [examples/He4](examples/He4); no reference checkout or GAMESS is required.
 
-### Intended stable-release setup
+### Install into the QFw environment
 
-Once the assumed compatible Tierkreis release exists, replace the sibling
-`tierkreis` source override in [pyproject.toml](pyproject.toml) with that
-versioned dependency and regenerate `uv.lock`. This repository has **not**
-made that dependency migration yet; the commands below are the intended
-release-mode setup, not a claim about the currently published package.
+The project pins `tierkreis==3.0.0rc0` and the lockfile records the PyPI wheel.
+Because it is a release candidate, upgrades remain explicit: update the pin and
+regenerate `uv.lock` before adopting another Tierkreis version.
 
 In a site-approved environment that already contains QFw:
 
@@ -134,36 +127,11 @@ The operator must check dependency compatibility with those packages; it does
 not guarantee compatibility by itself. Do not modify a shared environment
 without permission or while workflows run.
 
-### Temporary local Tierkreis source
-
-The actual source override is `../tierkreis/tierkreis`, relative to this
-project. Make that source available **on Linux where installation occurs**,
-including frontend assets and the required trace-flush API. It is not a
-permanent cluster dependency. Never copy a macOS native extension to Linux.
-
-Use an empty, explicitly named Cargo output directory for each installation,
-and disable uv's download/build cache:
-
-```sh
-# Set these to new writable paths on the Linux installation host.
-export UV_PROJECT_ENVIRONMENT=/path/to/site-approved/qfw-application-venv
-export CARGO_TARGET_DIR="$(mktemp -d /tmp/fmo-tierkreis-target.XXXXXX)"
-export CARGO_BUILD_JOBS=2
-uv --no-cache sync --locked --no-dev --inexact
-```
-
-This builds Tierkreis from the sibling source without reusing a target directory.
-A compatible Rust toolchain must be provisioned; the previous Linux validation
-used 1.99.1. Retain build errors for diagnosis; remove the specific temporary
-target directory after installation if no longer needed.
-The Python `tkr serve` command uses the native extension directly, including
-for remote viewing with `--host 0.0.0.0`; no separate server binary is needed.
-
 ### Installing on the virtual cluster
 
 The host mount alone does not install dependencies. On the new stock cluster
-image, first provision Tierkreis and scientific dependencies on every execution
-node using the Linux procedure above (release or temporary source).
+image, install the project and its dependencies on every execution node using
+the procedure above.
 The old application's preinstalled dependencies were lost when its containers
 were removed. **Do not use `--no-deps` on these fresh environments.**
 
@@ -173,11 +141,8 @@ to all workers. The profile currently expects the site's QFw environment
 `/opt/openqse/qfw-venv`; changing environments requires changing the launcher's
 `QFW_VENV` and worker executable search path together.
 
-For the temporary source setup, the sibling Tierkreis source must also be
-mounted/copied into each installation host at the expected path. The optional
-Compose overlay intentionally mounts only this project; it does not hide that
-temporary extra requirement. Once a stable wheel is used, only this project
-needs to be cloned/mounted.
+Only this project needs to be cloned or mounted; Tierkreis is installed from
+the locked PyPI artifact.
 
 Verify imports from outside the project directory so source shadowing does not
 mask missing installations:
@@ -321,7 +286,7 @@ with convergence false due to the small budgets. Tempo returned runtime spans.
 The first attempt stalled in DEFw reservation transport; operator-approved
 NWQSim/gateway recovery allowed the retry to finish. The root cause is not fixed.
 
-This used the earlier patched Linux runtime/application installation, not the
-fresh stock cluster or the assumed future Tierkreis release. The runtime volumes
-were subsequently deleted. Full-budget cluster examples and real hardware
-execution remain unverified.
+This used an earlier patched Linux runtime/application installation, not
+`tierkreis==3.0.0rc0` on a fresh stock cluster. The runtime volumes were
+subsequently deleted. Full-budget cluster examples, validation of the release
+candidate on QFw, and real hardware execution remain unverified.

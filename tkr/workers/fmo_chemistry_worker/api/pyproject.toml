@@ -2,7 +2,7 @@
 name = "tkr-fmo-chemistry-worker"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["tierkreis"]
+dependencies = ["tierkreis==3.0.0rc0"]
 
 [build-system]
 requires = ["hatchling"]
