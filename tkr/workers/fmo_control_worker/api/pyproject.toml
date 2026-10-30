@@ -5,7 +5,7 @@ description = "A tierkreis worker api."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis",
+    "tierkreis==3.0.0rc0",
 ]
 
 [build-system]
@@ -14,4 +14,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel.force-include]
 "api.py" = "fmo_control_worker.py"
-

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "FMO molecular integrals, energy contraction and orbital optimization"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["tierkreis", "tierkreis-sc-demo", "tkr-fmo-chemistry-worker", "numpy>=2.3", "scipy==1.18.1", "pyscf>=2.13"]
+dependencies = ["tierkreis==3.0.0rc0", "tierkreis-sc-demo", "tkr-fmo-chemistry-worker", "numpy>=2.3", "scipy==1.18.1", "pyscf>=2.13"]
 
 [tool.uv.sources]
 tierkreis-sc-demo = { workspace = true }

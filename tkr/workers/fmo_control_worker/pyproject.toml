@@ -5,7 +5,7 @@ description = "FMO optimization feedback and energy reduction"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis",
+    "tierkreis==3.0.0rc0",
     "tkr-fmo-control-worker",
     "tierkreis-sc-demo",
     "numpy>=2.3",

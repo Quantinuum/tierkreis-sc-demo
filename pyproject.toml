@@ -8,14 +8,14 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis",
+    "tierkreis==3.0.0rc0",
     "tkr-fmo-control-worker-impl",
     "tkr-fmo-chemistry-worker-impl",
     "tkr-fmo-quantum-worker-impl",
 ]
 
 [dependency-groups]
-dev = ["tierkreis[stubs]", "pyright"]
+dev = ["tierkreis[stubs]==3.0.0rc0", "pyright"]
 
 [build-system]
 requires = ["hatchling"]
@@ -29,7 +29,6 @@ exclude = ["tkr/workers/**"]
 members = ["tkr/workers/fmo_*", "tkr/workers/fmo_*/api"]
 
 [tool.uv.sources]
-tierkreis = { path = "../tierkreis/tierkreis", editable = true }
 tkr-fmo-control-worker = { workspace = true }
 tkr-fmo-chemistry-worker = { workspace = true }
 tkr-fmo-quantum-worker = { workspace = true }

@@ -37,25 +37,16 @@ Example 1 has no macro loop; examples 2 and 3 do.
 
 ## Local setup and execution
 
-Requires Python 3.12+, `uv`, and the temporary sibling Tierkreis dependency
-configured in [pyproject.toml](pyproject.toml). Tierkreis's frontend/server fix
-is now upstream in `bb3c517a` (included in checkout `31ab1255`); **do not apply
-any old visualization patch to that checkout**. The separate trace-flush
-changes must also be present: the CLI imports `tierkreis._tierkreis.flush_traces`.
-The current sibling checkout also adds `tkr run --profile`, `--timeout` and
-absolute file-asset locations for relative storage roots. These local changes
-must be included until they are available in a Tierkreis release.
-
-For that already-updated checkout:
+Requires Python 3.12+ and `uv`. The project pins the Tierkreis 3.0 release
+candidate (`tierkreis==3.0.0rc0`) and installs it from PyPI; no sibling
+Tierkreis checkout or Rust build is required.
 
 ```sh
-uv --no-cache sync --locked
-# If already installed before patching:
-# uv --no-cache sync --locked --reinstall-package tierkreis
+uv sync --locked
 ```
 
 Cluster provisioning belongs to the operator, not an application Dockerfile.
-For cache-free installation and the temporary source dependency, see
+For installation into a site-provided QFw environment, see
 [the installation guide](CLUSTER.md#3-install-the-project-not-another-cluster-image).
 Start the QFw telemetry stack using [the cluster guide](CLUSTER.md#2-local-virtual-cluster-commands-you-run).
 The runtime and profiles enable OTLP/gRPC export; local runs use host port 4317.
@@ -261,13 +252,8 @@ Full-budget cluster examples and real hardware execution remain unverified.
 ## Runtime/deployment limitations
 
 - GAMESS execution and video recording are deliberately removed.
-- The local Tierkreis source dependency is
-  temporary until a supported wheel includes the tested Rust APIs, viewer
-  assets and trace-flush API. Then Tierkreis should be installed by `uv` as a
-  project dependency; only this project needs cloning on a provisioned site.
-- The current Tierkreis checkout includes the upstream frontend/server fixes;
-  no project visualization patch is needed. A compatible prebuilt
-  frontend bundle is still required. No package-age policy is overridden.
+- Tierkreis is pinned to the `3.0.0rc0` release candidate. Upgrade the pin and
+  regenerate `uv.lock` when a newer compatible release is adopted.
 - Rust HPC profiles select static resource envelopes, not arbitrary dynamic
   graph-derived scheduler requests. Change reservation bounds in the quantum
   profile's scheduler arguments; no matching worker environment is required.
