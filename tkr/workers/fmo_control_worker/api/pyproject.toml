@@ -5,7 +5,7 @@ description = "A tierkreis worker api."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis==3.0.0rc0",
+    "tierkreis==3.0.0rc1",
 ]
 
 [build-system]

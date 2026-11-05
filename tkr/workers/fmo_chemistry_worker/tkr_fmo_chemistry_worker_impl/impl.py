@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import numpy as np
-from tierkreis import Worker
+from tierkreis.worker import Worker
 
 from fmo_vqe.models import (
     DerivativeBlock,

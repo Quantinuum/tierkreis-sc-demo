@@ -1,4 +1,4 @@
-from tierkreis import Worker
+from tierkreis.worker import Worker
 
 from fmo_vqe.models import (
     MeasurementJob,
