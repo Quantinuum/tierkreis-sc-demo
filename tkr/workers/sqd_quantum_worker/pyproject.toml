@@ -1,0 +1,27 @@
+[project]
+name = "tkr-sqd-quantum-worker-impl"
+version = "0.1.0"
+description = "Qiskit LUCJ circuit construction and local or QFw sampling"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "tierkreis==3.0.0rc1",
+    "tkr-sqd-quantum-worker",
+    "tierkreis-sc-demo",
+    "numpy>=2.3",
+    "ffsim>=0.0.60",
+    "qiskit>=2.0",
+    "qiskit-aer>=0.17",
+    "qiskit-ibm-runtime>=0.40",
+]
+
+[tool.uv.sources]
+tkr-sqd-quantum-worker = { workspace = true }
+tierkreis-sc-demo = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+tkr-sqd-quantum-worker = "tkr_sqd_quantum_worker_impl.main:main"
