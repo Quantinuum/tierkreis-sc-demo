@@ -1,0 +1,19 @@
+{
+  "fcidump": "examples/He4/He1-4.FCIDUMP-2-1",
+  "settings": {
+    "sqd_dim": 2025,
+    "shots": 4096,
+    "quantum_source": "quantum",
+    "random_seed": 24,
+    "n_lucj_layers": 2,
+    "use_reset_mitigation": true,
+    "num_walkers": 4,
+    "iterations": 2,
+    "sbd": {
+      "block": 10,
+      "iteration": 2,
+      "tolerance": 1e-06,
+      "carryover_ratio": 0.2
+    }
+  }
+}
