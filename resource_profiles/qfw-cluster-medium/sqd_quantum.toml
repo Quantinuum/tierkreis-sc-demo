@@ -1,0 +1,10 @@
+# The selected input takes the random branch, so this context is not executed.
+executor = "subprocess"
+
+[env]
+TKR_QUANTUM_BACKEND = "local"
+OTEL_EXPORTER_OTLP_ENDPOINT = "http://otel-collector:4317"
+OMP_NUM_THREADS = "1"
+OPENBLAS_NUM_THREADS = "1"
+MKL_NUM_THREADS = "1"
+OPENSSL_armcap = "0"
