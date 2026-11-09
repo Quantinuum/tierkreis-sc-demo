@@ -19,7 +19,6 @@ def sample_lucj(task: WalkerTask, problem: Problem, settings: Settings) -> Sampl
         sampling.sample(
             circuit,
             settings.shots,
-            task.seed(settings.random_seed),
             settings.use_reset_mitigation,
         )
     )

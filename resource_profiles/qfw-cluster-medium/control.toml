@@ -1,8 +1,0 @@
-executor = "subprocess"
-
-[env]
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://otel-collector:4317"
-OMP_NUM_THREADS = "1"
-OPENBLAS_NUM_THREADS = "1"
-MKL_NUM_THREADS = "1"
-OPENSSL_armcap = "0"
