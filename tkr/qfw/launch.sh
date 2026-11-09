@@ -35,5 +35,6 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 
 qfw-setup --run-dir "${run_dir}" --site-config "${QFW_SITE_CONFIG:-/etc/openqse/qfw/site.yaml}"
+# TODO check if this run command works correctly
 uv run --active --no-sync --python "${VIRTUAL_ENV}/bin/python" \
     qfw-srun --run-dir "${run_dir}" --nodes=1 --ntasks=1 -- -m "${worker_module}" "${worker_args}"
