@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis==3.0.0rc1",
+    "tierkreis==3.0.0rc3",
     "tkr-fmo-control-worker-impl",
     "tkr-fmo-chemistry-worker-impl",
     "tkr-fmo-quantum-worker-impl",
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["tierkreis[stubs]==3.0.0rc1", "pyright", "pytest>=8"]
+dev = ["tierkreis[stubs]==3.0.0rc3", "pyright", "pytest>=8"]
 
 [build-system]
 requires = ["hatchling"]

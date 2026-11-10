@@ -5,7 +5,7 @@ description = "Qiskit LUCJ circuit construction and local or QFw sampling"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "tierkreis==3.0.0rc1",
+    "tierkreis==3.0.0rc3",
     "tkr-sqd-quantum-worker",
     "tierkreis-sc-demo",
     "numpy>=2.3",
