@@ -6,13 +6,13 @@
     "quantum_source": "quantum",
     "random_seed": 24,
     "n_lucj_layers": 2,
-    "use_reset_mitigation": true,
+    "use_reset_mitigation": false,
     "num_walkers": 4,
     "iterations": 2,
     "sbd": {
       "block": 10,
       "iteration": 2,
-      "tolerance": 1e-06,
+      "tolerance": 1e-6,
       "carryover_ratio": 0.2
     }
   }
