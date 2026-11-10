@@ -2,12 +2,32 @@
   "typeCheckingMode": "strict",
   "venvPath": ".",
   "venv": ".venv",
-  "include": ["src/fmo_vqe", "tkr/graphs", "tkr/workers"],
-  "exclude": ["**/api/api.py"],
+  "include": [
+    "src/fmo_vqe",
+    "src/sqd_sbd",
+    "tkr/graphs",
+    "tkr/workers",
+    "tkr/qfw"
+  ],
+  "exclude": ["**/api/api.py", "tkr/workers/sqd_sbd_worker/native/sbd"],
   "reportMissingTypeStubs": false,
   "executionEnvironments": [
-    {"root": "src/fmo_vqe", "reportUnknownVariableType": false, "reportUnknownMemberType": false, "reportUnknownArgumentType": false},
-    {"root": "tkr/graphs", "reportUnknownVariableType": false, "reportUnknownMemberType": false},
-    {"root": "tkr/workers", "reportUnknownVariableType": false, "reportUnknownMemberType": false, "reportUnknownArgumentType": false}
+    {
+      "root": "src/fmo_vqe",
+      "reportUnknownVariableType": false,
+      "reportUnknownMemberType": false,
+      "reportUnknownArgumentType": false
+    },
+    {
+      "root": "tkr/graphs",
+      "reportUnknownVariableType": false,
+      "reportUnknownMemberType": false
+    },
+    {
+      "root": "tkr/workers",
+      "reportUnknownVariableType": false,
+      "reportUnknownMemberType": false,
+      "reportUnknownArgumentType": false
+    }
   ]
 }
