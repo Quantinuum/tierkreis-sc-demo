@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from tierkreis.controller.data.models import portmapping
+from tierkreis.data.models import portmapping
 
 
 @dataclass

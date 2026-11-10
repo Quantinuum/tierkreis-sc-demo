@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from tierkreis import Worker
+from tierkreis.worker import Worker
 from tkr_fmo_control_worker_impl import control
 
 from fmo_vqe.models import (
