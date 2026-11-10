@@ -39,6 +39,11 @@ def compile_qfw(
     search = generate_preset_pass_manager(
         optimization_level=3, target=target, seed_transpiler=TRANSPILE_SEED
     )
+    if "rzz" in target.operation_names:
+        search.post_optimization = _rzz_optimization(target)
+    if coupling_map is None:
+        logger.info("Compiling all-to-all QFw target without layout search")
+        return search.run(prepared)
     search.layout = PassManager(
         [
             BarrierBeforeFinalMeasurements(
@@ -61,8 +66,6 @@ def compile_qfw(
             ),
         ]
     )
-    if "rzz" in target.operation_names:
-        search.post_optimization = _rzz_optimization(target)
     logger.info(
         "Searching QFw layout: max_iterations=%s, swap_trials=%s, layout_trials=%s",
         max_iterations,

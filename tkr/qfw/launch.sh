@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-worker_module=${1:?worker module is required}
+worker_script=${1:?worker script is required}
 worker_args=$(realpath "${2:?worker argument JSON is required}")
 if [[ ! -f ${worker_args} ]]; then
     printf 'Worker argument file does not exist: %s\n' "${worker_args}" >&2
     exit 2
 fi
 
-
+mkdir -p "${QFW_DIR:?QFW_DIR is required}"
 run_dir=$(mktemp -d "${QFW_DIR:?QFW_DIR is required}/qfw.XXXXXX")
-mkdir -p "${QFW_RUN_DIR}"
 export QFW_SHARED_ROOT=${QFW_SHARED_ROOT:-/workspace/qfw-container-base}
 source "${QFW_INSTALL_PREFIX:-/opt/openqse/qfw}/bin/qfw-activate" \
     --venv "${QFW_VENV:-/opt/openqse/qfw-venv}"
@@ -35,6 +34,5 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 
 qfw-setup --run-dir "${run_dir}" --site-config "${QFW_SITE_CONFIG:-/etc/openqse/qfw/site.yaml}"
-# TODO check if this run command works correctly
 uv run --active --no-sync --python "${VIRTUAL_ENV}/bin/python" \
-    qfw-srun --run-dir "${run_dir}" --nodes=1 --ntasks=1 -- -m "${worker_module}" "${worker_args}"
+    qfw-srun --run-dir "${run_dir}" --nodes=1 --ntasks=1 "${worker_script}" "${worker_args}"
