@@ -13,6 +13,7 @@ dependencies = [
     "qiskit>=2.0",
     "qiskit-aer>=0.17",
     "qiskit-ibm-runtime>=0.40",
+    "mqt-core[qiskit]>=4.2",
 ]
 
 [tool.uv.sources]

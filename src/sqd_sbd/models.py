@@ -52,6 +52,7 @@ class Settings(BaseModel):
     sqd_dim: int = Field(default=1_000_000, ge=1)
     shots: int = Field(default=100_000, ge=1)
     quantum_source: Literal["quantum", "random"] = "quantum"
+    compilation: Literal["qfw", "mqt"] = "qfw"
     random_seed: int = Field(default=24, ge=0)
     n_lucj_layers: int = Field(default=2, ge=1)
     use_reset_mitigation: bool = True

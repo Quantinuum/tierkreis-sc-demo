@@ -3,6 +3,7 @@
 import os
 from collections import Counter
 from collections.abc import Mapping
+from typing import Literal
 
 from qiskit import QuantumCircuit
 
@@ -43,10 +44,12 @@ def sample(
     circuit: QuantumCircuit,
     shots: int,
     reset_mitigation: bool,
+    *,
+    compilation: Literal["qfw", "mqt"] = "qfw",
 ) -> Samples:
     backend = os.environ.get("TKR_QUANTUM_BACKEND", "qfw")
     if backend == "qfw":
-        counts, name, compiled = run_counts(circuit, shots)
+        counts, name, compiled = run_counts(circuit, shots, compilation=compilation)
         name = f"qfw:{name}"
     else:
         raise ValueError(f"Unknown TKR_QUANTUM_BACKEND {backend!r}")

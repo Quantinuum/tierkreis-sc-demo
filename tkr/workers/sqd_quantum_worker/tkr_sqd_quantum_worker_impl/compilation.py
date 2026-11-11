@@ -1,12 +1,14 @@
-"""Qiskit compilation matching qcsc-prefect's pinned SQD transpile_core.
+"""QFw reference compilation and MQT compilation for SQD circuits.
 
-Reference: bf820ee7ed866ae5e867e48c5996076f6248b939 (Apache-2.0).
+QFw reference: bf820ee7ed866ae5e867e48c5996076f6248b939 (Apache-2.0).
 """
 
 import logging
 
 from ffsim.qiskit import PRE_INIT
+from mqt.core.mlir import compile_program
 from qiskit import QuantumCircuit
+from qiskit.circuit.equivalence_library import SessionEquivalenceLibrary
 from qiskit.passmanager import ConditionalController
 from qiskit.transpiler import PassManager, Target, generate_preset_pass_manager
 from qiskit.transpiler.passes import (
@@ -18,11 +20,31 @@ from qiskit.transpiler.passes import (
     RemoveIdentityEquivalent,
     SabreLayout,
     SetLayout,
+    UnrollCustomDefinitions,
 )
 from qiskit_ibm_runtime.transpiler.passes import FoldRzzAngle
 
 TRANSPILE_SEED = 6538
 logger = logging.getLogger(__name__)
+
+
+def compile_mqt(circuit: QuantumCircuit, target: Target) -> QuantumCircuit:
+    """Prepare ffsim gates and compile for a Qiskit target with MQT Core."""
+    prepared = PRE_INIT.run(circuit)
+    # ffsim definitions can contain zero-qubit global phases MQT cannot import.
+    prepared = PassManager(
+        UnrollCustomDefinitions(SessionEquivalenceLibrary, basis_gates=["u", "cx"])
+    ).run(prepared)
+    compiled = compile_program(prepared, target=target)
+    if not isinstance(compiled, QuantumCircuit):
+        raise TypeError("MQT compilation did not return a Qiskit circuit")
+    logger.info(
+        "MQT circuit compiled: qubits=%s, depth=%s, operations=%s",
+        compiled.num_qubits,
+        compiled.depth(),
+        dict(compiled.count_ops()),
+    )
+    return compiled
 
 
 def compile_qfw(

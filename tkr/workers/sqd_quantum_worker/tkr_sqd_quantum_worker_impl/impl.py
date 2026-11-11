@@ -20,5 +20,6 @@ def sample_lucj(task: WalkerTask, problem: Problem, settings: Settings) -> Sampl
             circuit,
             settings.shots,
             settings.use_reset_mitigation,
+            compilation=settings.compilation,
         )
     )
