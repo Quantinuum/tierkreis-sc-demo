@@ -20,7 +20,8 @@ def run_counts(
     if compilation == "qfw":
         compiled = compile_qfw(circuit, backend.target)
     elif compilation == "mqt":
-        compiled = compile_mqt(circuit, backend.target)
+        # compiled = compile_mqt(circuit, backend.target)
+        compiled = backend.compile(circuit, "mqt")
     else:
         raise ValueError(f"Unknown compilation {compilation!r}")
     counts = backend.run(compiled, shots=shots).result().get_counts(compiled)
