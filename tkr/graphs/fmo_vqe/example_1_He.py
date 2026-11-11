@@ -7,17 +7,23 @@ from tierkreis.builtins import iadd, tkr_or, igt, tkr_not
 
 from fmo_pyscf_worker import fci_energy, build_He_atom
 from fmo_puccd_worker import (
-    initial_guess_from_pyscf_mol,
-    pauli_ham_from_pyscf_mol,
-    compute_energy_qk_from_pyscf_mol,
-    expectation_values_from_pyscf_mol,
-    minimize_step,
+    PairUCCData,
+    PairUCCState,
+    initial_guess,
+    pucc_from_pyscf_str,
+    compute_energy_qk,
+    expectation_values,
+    minimize_amps_step,
+    minimize_orbs_step,
+    minimize_orbs_converged,
+    compute_energy,
 )
 from tierkreis.data.types import Workflow
 
 
 class OptimizeAmpsInputs(NamedTuple):
-    mol_str: TKR[str]
+    data: TKR[PairUCCData]
+    state: TKR[PairUCCState]
     params: TKR[list[float]]
     x_history: TKR[list[float]]
 
@@ -28,6 +34,7 @@ class OptimizeAmpsInputs(NamedTuple):
 
 
 class OptimizeAmpsOutputs(NamedTuple):
+    state: TKR[PairUCCState]
     params: TKR[list[float]]
     x_history: TKR[list[float]]
 
@@ -39,8 +46,9 @@ def optimize_amps() -> Workflow[OptimizeAmpsInputs, OptimizeAmpsOutputs]:
     wf = Graph(OptimizeAmpsInputs, OptimizeAmpsOutputs)
 
     step_output = wf.task(
-        minimize_step(
-            wf.inputs.mol_str,
+        minimize_amps_step(
+            wf.inputs.data,
+            wf.inputs.state,
             wf.inputs.params,
             wf.inputs.thresh,
             wf.inputs.x_history,
@@ -51,11 +59,12 @@ def optimize_amps() -> Workflow[OptimizeAmpsInputs, OptimizeAmpsOutputs]:
         iadd(wf.inputs.current_iteration, wf.inputs.maxiter_per_step)
     )
     max_steps_exceeded = wf.task(igt(next_iteration, wf.inputs.max_steps))
-    not_converged = wf.task(tkr_not(step_output.converged))
-    should_continue = wf.task(tkr_or(not_converged, max_steps_exceeded))
+    finished = wf.task(tkr_or(step_output.converged, max_steps_exceeded))
+    should_continue = wf.task(tkr_not(finished))
 
     return wf.finish_with_outputs(
         OptimizeAmpsOutputs(
+            state=step_output.state,
             params=step_output.next_params,
             x_history=step_output.x_history,
             current_iteration=next_iteration,
@@ -64,9 +73,55 @@ def optimize_amps() -> Workflow[OptimizeAmpsInputs, OptimizeAmpsOutputs]:
     )
 
 
+class OptimizeOrbsInputs(NamedTuple):
+    data: TKR[PairUCCData]
+    state: TKR[PairUCCState]
+
+    current_iteration: TKR[int]
+    maxiter_per_step: TKR[int]
+    thresh: TKR[float]
+    max_steps: TKR[int]
+
+
+class OptimizeOrbsOutputs(NamedTuple):
+    state: TKR[PairUCCState]
+
+    current_iteration: TKR[int]
+    should_continue: TKR[bool]
+
+
+def optimize_orbs() -> Workflow[OptimizeOrbsInputs, OptimizeOrbsOutputs]:
+    wf = Graph(OptimizeOrbsInputs, OptimizeOrbsOutputs)
+
+    step_output = wf.task(
+        minimize_orbs_step(
+            wf.inputs.data,
+            wf.inputs.state,
+            wf.inputs.maxiter_per_step,
+        )
+    )
+    next_iteration = wf.task(
+        iadd(wf.inputs.current_iteration, wf.inputs.maxiter_per_step)
+    )
+    max_steps_exceeded = wf.task(igt(next_iteration, wf.inputs.max_steps))
+    converged = wf.task(
+        minimize_orbs_converged(wf.inputs.data, step_output.state, wf.inputs.thresh)
+    )
+    finished = wf.task(tkr_or(converged, max_steps_exceeded))
+    should_continue = wf.task(tkr_not(finished))
+
+    return wf.finish_with_outputs(
+        OptimizeOrbsOutputs(
+            state=step_output.state,
+            current_iteration=next_iteration,
+            should_continue=should_continue,
+        )
+    )
+
+
 class Outputs(NamedTuple):
     exact_energy: TKR[float]
-    pauli_ham: TKR[dict[str, float]]
+    # pauli_ham: TKR[dict[str, float]]
     initial_guess: TKR[list[float]]
     # First guess with qiskit
     guess_energy1: TKR[float]
@@ -76,10 +131,15 @@ class Outputs(NamedTuple):
     guess_orb_hess: TKR[list[list[float]]]
 
     vqe_params: TKR[list[float]]
+    vqe_energy: TKR[float]
+    oo_vqe_energy: TKR[float]
 
 
 def example_1_He() -> Workflow[EmptyModel, Outputs]:
     wf = Graph(EmptyModel, Outputs)
+    zero = wf.const(0)
+    max_iter_per_step = wf.const(500)
+    max_steps = wf.const(1000)
 
     # Step 1. Build He atom
     mol_str = wf.task(build_He_atom())
@@ -90,48 +150,72 @@ def example_1_He() -> Workflow[EmptyModel, Outputs]:
     # Step 3. Initialize a pairUCC object (hard to replicate)
 
     # Step 4. Get the system Hamiltonian.
-    pauli_ham = wf.task(pauli_ham_from_pyscf_mol(mol_str))
+    data = wf.task(pucc_from_pyscf_str(mol_str))
+    # ham = wf.task(pauli_ham(data))
 
     # Step 5. Print the ansatz circuit
     # Not yet implemented
 
     # Step 6. Prepare an initial guess for the VQE
-    initial_guess = wf.task(initial_guess_from_pyscf_mol(mol_str))
+    guess = wf.task(initial_guess(data))
 
     # Step 7. Measure expectation value using qiskit
-    compute_energy_output = wf.task(
-        compute_energy_qk_from_pyscf_mol(mol_str, initial_guess)
-    )
+    compute_energy_output = wf.task(compute_energy_qk(data, guess))
 
     # Step 8. Compute expectation values
-    expectation_values = wf.task(
-        expectation_values_from_pyscf_mol(
-            mol_str, compute_energy_output.evs, compute_energy_output.stds
+    ev = wf.task(
+        expectation_values(
+            data,
+            compute_energy_output.state,
         )
     )
 
     vqe_amps = wf.loop(
         optimize_amps(),
         OptimizeAmpsInputs(
-            mol_str,
-            initial_guess,
+            data,
+            compute_energy_output.state,
+            guess,
             x_history=wf.const([]),
-            current_iteration=wf.const(0),
-            maxiter_per_step=wf.const(10),
+            current_iteration=zero,
+            maxiter_per_step=max_iter_per_step,
             thresh=wf.const(1e-4),
-            max_steps=wf.const(1000),
+            max_steps=max_steps,
         ),
+    )
+
+    vqe_energy = wf.task(compute_energy(data, vqe_amps.params))
+
+    vqe_orbs = wf.loop(
+        optimize_orbs(),
+        OptimizeOrbsInputs(
+            data,
+            vqe_amps.state,
+            current_iteration=zero,
+            maxiter_per_step=max_iter_per_step,
+            thresh=wf.const(1e-10),
+            max_steps=max_steps,
+        ),
+    )
+
+    oo_expectation_values = wf.task(
+        expectation_values(
+            data,
+            vqe_orbs.state,
+        )
     )
 
     return wf.finish_with_outputs(
         outputs=Outputs(
             exact_energy,
-            pauli_ham,
-            initial_guess,
+            # pauli_ham,
+            guess,
             guess_energy1=compute_energy_output.guess_energy,
-            guess_energy2=expectation_values.guess_energy2,
-            guess_orb_grad=expectation_values.guess_orb_grad,
-            guess_orb_hess=expectation_values.guess_orb_hess,
+            guess_energy2=ev.guess_energy2,
+            guess_orb_grad=ev.guess_orb_grad,
+            guess_orb_hess=ev.guess_orb_hess,
             vqe_params=vqe_amps.params,
+            vqe_energy=vqe_energy,
+            oo_vqe_energy=oo_expectation_values.guess_energy2,
         )
     )

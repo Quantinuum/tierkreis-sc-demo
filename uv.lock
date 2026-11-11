@@ -1603,6 +1603,7 @@ version = "0.1.0"
 source = { editable = "tkr/workers/fmo_puccd_worker" }
 dependencies = [
     { name = "openfermion" },
+    { name = "pyscf" },
     { name = "qiskit" },
     { name = "qiskit-aer" },
     { name = "scipy" },
@@ -1612,6 +1613,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "openfermion", specifier = ">=1.8.1" },
+    { name = "pyscf", specifier = ">=2.15.0" },
     { name = "qiskit", specifier = ">=2.6.2" },
     { name = "qiskit-aer", specifier = ">=0.18.2" },
     { name = "scipy", specifier = ">=1.18.1" },

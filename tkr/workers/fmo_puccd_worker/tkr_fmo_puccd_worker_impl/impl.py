@@ -1,10 +1,12 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from numpy import pi
+import numpy as np
 import pyscf.gto.mole as mole
+import scipy
 from tierkreis.data.models import portmapping
 from tierkreis.worker import Worker
-from scipy.optimize import OptimizeResult, minimize
+from scipy.optimize import minimize
 
 from tkr_fmo_puccd_worker_impl.puccd import (
     of2qiskit,
@@ -16,10 +18,59 @@ from tkr_fmo_puccd_worker_impl.puccd import (
 worker = Worker("fmo_puccd_worker")
 
 
+class PairUCCData(NamedTuple):
+    """The information required to construct a `pairUCC` object"""
+
+    n_elec_pairs: int
+    h1mo: list[float]
+    h2mo: list[list[float]]
+    enuc: float
+
+
+class PairUCCState(NamedTuple):
+    """The information that is mutated by `pairUCC` methods."""
+
+    curr_e: float
+    gmo: list[list[float]]
+    evs: dict[str, float]
+    stds: dict[str, float]
+
+    @classmethod
+    def from_puccd(cls, puccd: pairUCC) -> "PairUCCState":
+        return PairUCCState(
+            curr_e=puccd.curr_e, gmo=puccd.gmo.tolist(), evs=puccd.evs, stds=puccd.stds
+        )
+
+
+def rehydrate(data: PairUCCData, state: Optional[PairUCCState]) -> pairUCC:
+    puccd = pairUCC(
+        data.n_elec_pairs, np.array(data.h1mo), np.array(data.h2mo), data.enuc
+    )
+
+    if state is not None:
+        puccd.curr_e = state.curr_e
+        puccd.gmo = np.array(state.gmo)
+        puccd.evs = state.evs
+        puccd.stds = state.stds
+
+    return puccd
+
+
 @worker.task()
-def pauli_ham_from_pyscf_mol(mol_str: str) -> dict[str, float]:
+def pucc_from_pyscf_str(mol_str: str) -> PairUCCData:
     mol = mole.loads(mol_str)
     puccd = pairUCC.from_pyscf_Mole(mol)
+    return PairUCCData(
+        n_elec_pairs=puccd.n_elec_pairs,
+        h1mo=puccd.h1mo.tolist(),
+        h2mo=puccd.h2mo.tolist(),
+        enuc=puccd.enuc,
+    )
+
+
+@worker.task()
+def pauli_ham(data: PairUCCData) -> dict[str, float]:
+    puccd = rehydrate(data, None)
     pauli_ham = of2qiskit(puccd.ham_qubit(), puccd.n_qubits)
     return {
         # Convert to native float for easier visualisation.
@@ -29,9 +80,8 @@ def pauli_ham_from_pyscf_mol(mol_str: str) -> dict[str, float]:
 
 
 @worker.task()
-def initial_guess_from_pyscf_mol(mol_str: str) -> list[float]:
-    mol = mole.loads(mol_str)
-    puccd = pairUCC.from_pyscf_Mole(mol)
+def initial_guess(data: PairUCCData) -> list[float]:
+    puccd = rehydrate(data, None)
     guess = puccd.initial_guess_mp2d()
     # Convert to native float for easier visualisation.
     return [float(param) for param in guess.tolist()]
@@ -40,21 +90,22 @@ def initial_guess_from_pyscf_mol(mol_str: str) -> list[float]:
 @portmapping
 class ComputeEnergyOutput(NamedTuple):
     guess_energy: float
-    evs: dict[str, float]
-    stds: dict[str, float]
+    state: PairUCCState
 
 
 @worker.task()
-def compute_energy_qk_from_pyscf_mol(
-    mol_str: str, guess: list[float]
+def compute_energy_qk(
+    data: PairUCCData,
+    guess: list[float],
 ) -> ComputeEnergyOutput:
-    mol = mole.loads(mol_str)
-    puccd = pairUCC.from_pyscf_Mole(mol)
+    puccd = rehydrate(data, None)
+
     puccd_initialize()
     qk_guess = puccd.compute_energy_qk(guess)
     puccd_finalize()
-    evs, stds = puccd.evs, puccd.stds
-    return ComputeEnergyOutput(guess_energy=qk_guess, evs=evs, stds=stds)
+    return ComputeEnergyOutput(
+        guess_energy=qk_guess, state=PairUCCState.from_puccd(puccd)
+    )
 
 
 @portmapping
@@ -65,13 +116,11 @@ class ExpectationValues(NamedTuple):
 
 
 @worker.task()
-def expectation_values_from_pyscf_mol(
-    mol_str: str, evs: dict[str, float], stds: dict[str, float]
+def expectation_values(
+    data: PairUCCData,
+    state: PairUCCState,
 ) -> ExpectationValues:
-    mol = mole.loads(mol_str)
-    puccd = pairUCC.from_pyscf_Mole(mol)
-    puccd.evs = evs
-    puccd.stds = stds
+    puccd = rehydrate(data, state)
 
     puccd_initialize()
     guess_energy2 = puccd.expected_energy()
@@ -86,22 +135,23 @@ def expectation_values_from_pyscf_mol(
 
 
 @portmapping
-class MinimizeStepOutput(NamedTuple):
+class MinimizeAmpsStepOutput(NamedTuple):
     next_params: list[float]
+    state: PairUCCState
     x_history: list[float]
     converged: bool
 
 
 @worker.task()
-def minimize_step(
-    mol_str: str,
+def minimize_amps_step(
+    data: PairUCCData,
+    state: PairUCCState,
     params: list[float],
     thresh: float,
     x_history: list[float],
     max_iter_per_step: int,
-) -> MinimizeStepOutput:
-    mol = mole.loads(mol_str)
-    puccd = pairUCC.from_pyscf_Mole(mol)
+) -> MinimizeAmpsStepOutput:
+    puccd = rehydrate(data, state)
 
     cursor = 0
     history_len = len(x_history)
@@ -131,8 +181,63 @@ def minimize_step(
         options={"maxiter": max_iter_per_step + history_len},
     )
     puccd_finalize()
-    return MinimizeStepOutput(
+    return MinimizeAmpsStepOutput(
         next_params=[float(param) for param in opt_result["x"]],
+        # TODO: Unclear how stateful this actually is
+        state=PairUCCState.from_puccd(puccd),
         x_history=x_history,
         converged=opt_result["success"],
+    )
+
+
+@worker.task()
+def compute_energy(
+    data: PairUCCData,
+    params: list[float],
+) -> float:
+    puccd = rehydrate(data, None)
+    return puccd.energy(params)
+
+
+@worker.task()
+def compute_orb_grad(
+    data: PairUCCData,
+    params: list[float],
+) -> list[float]:
+    puccd = rehydrate(data, None)
+    return puccd.orb_grad(params).tolist()
+
+
+@worker.task()
+def minimize_orbs_converged(
+    data: PairUCCData,
+    state: PairUCCState,
+    grad_norm_thresh: float,
+) -> bool:
+    puccd = rehydrate(data, state)
+
+    curr_grad = puccd.orb_grad_qk()
+    grad_norm = scipy.linalg.norm(curr_grad)
+    return abs(grad_norm) < grad_norm_thresh
+
+
+@portmapping
+class MinimizeOrbsStepOutput(NamedTuple):
+    state: PairUCCState
+
+
+@worker.task()
+def minimize_orbs_step(
+    data: PairUCCData,
+    state: PairUCCState,
+    max_iter_per_step: int,
+) -> MinimizeOrbsStepOutput:
+    puccd = rehydrate(data, state)
+
+    puccd_initialize()
+    puccd.optimize_orbs_qk(True, maxiter=max_iter_per_step)
+    puccd_finalize()
+
+    return MinimizeOrbsStepOutput(
+        state=PairUCCState.from_puccd(puccd),
     )
