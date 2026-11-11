@@ -4,11 +4,11 @@ cpu = 2
 memory = "4Gi"
 walltime = "01:00:00"
 
-# The batch script launches the MPI binary directly within its allocation.
-# Add e.g. "--mpi=pmix" to `launcher` if the site requires it.
+# Use mpirun from the MPI installation used to build diag, inside the allocation.
+# Keep the explicit -n count in sync with proc;
 [mpi]
 proc = "2"
-launcher = ["srun"]
+launcher = ["mpirun", "-n", "2"]
 
 [extra_scheduler_args]
 "--account" = "qfw-test"
