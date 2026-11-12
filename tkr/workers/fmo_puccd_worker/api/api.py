@@ -13,6 +13,7 @@ class PairUCCState(Struct, Protocol):
     h1mo: list[float]
     h2mo: list[list[float]]
     stds: dict[str, float]
+    vqe_params: list[float]
 
 
 class ComputeEnergyOutput(NamedTuple):

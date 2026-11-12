@@ -31,6 +31,7 @@ class PairUCCState(NamedTuple):
     """The information that is mutated by `pairUCC` methods."""
 
     curr_e: float
+    vqe_params: list[float]
     # TODO: we could serialize these as numpy arrays directly if needed
     gmo: list[list[float]]
     h1mo: list[float]
@@ -41,8 +42,14 @@ class PairUCCState(NamedTuple):
 
     @classmethod
     def from_puccd(cls, puccd: pairUCC) -> "PairUCCState":
+        if isinstance(puccd.vqe_params, list):
+            vqe_params = puccd.vqe_params
+        else:
+            vqe_params = puccd.vqe_params.tolist()
+
         return PairUCCState(
             curr_e=puccd.curr_e,
+            vqe_params=vqe_params,
             gmo=puccd.gmo.tolist(),
             h1mo=puccd.h1mo.tolist(),
             h2mo=puccd.h2mo.tolist(),
@@ -58,6 +65,7 @@ def rehydrate(data: PairUCCData, state: Optional[PairUCCState]) -> pairUCC:
 
     if state is not None:
         puccd.curr_e = state.curr_e
+        puccd.vqe_params = np.array(state.vqe_params)
         puccd.gmo = np.array(state.gmo)
         puccd.h1mo = np.array(state.h1mo)
         puccd.h2mo = np.array(state.h2mo)
