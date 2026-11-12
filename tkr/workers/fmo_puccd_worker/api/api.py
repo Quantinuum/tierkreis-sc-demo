@@ -10,6 +10,8 @@ class PairUCCState(Struct, Protocol):
     curr_e: float
     evs: dict[str, float]
     gmo: list[list[float]]
+    h1mo: list[float]
+    h2mo: list[list[float]]
     stds: dict[str, float]
 
 
@@ -44,6 +46,18 @@ class PairUCCData(Struct, Protocol):
 
 class pucc_from_pyscf_str(NamedTuple):
     mol_str: TKR[str]
+
+    @staticmethod
+    def out() -> type[TKR[PairUCCData]]:
+        return TKR[PairUCCData]
+
+    @property
+    def namespace(self) -> str:
+        return "fmo_puccd_worker"
+
+
+class pucc_from_fcidump_filepath(NamedTuple):
+    filepath: TKR[str]
 
     @staticmethod
     def out() -> type[TKR[PairUCCData]]:

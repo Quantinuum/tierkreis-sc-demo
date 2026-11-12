@@ -31,14 +31,23 @@ class PairUCCState(NamedTuple):
     """The information that is mutated by `pairUCC` methods."""
 
     curr_e: float
+    # TODO: we could serialize these as numpy arrays directly if needed
     gmo: list[list[float]]
+    h1mo: list[float]
+    h2mo: list[list[float]]
+
     evs: dict[str, float]
     stds: dict[str, float]
 
     @classmethod
     def from_puccd(cls, puccd: pairUCC) -> "PairUCCState":
         return PairUCCState(
-            curr_e=puccd.curr_e, gmo=puccd.gmo.tolist(), evs=puccd.evs, stds=puccd.stds
+            curr_e=puccd.curr_e,
+            gmo=puccd.gmo.tolist(),
+            h1mo=puccd.h1mo.tolist(),
+            h2mo=puccd.h2mo.tolist(),
+            evs=puccd.evs,
+            stds=puccd.stds,
         )
 
 
@@ -50,6 +59,8 @@ def rehydrate(data: PairUCCData, state: Optional[PairUCCState]) -> pairUCC:
     if state is not None:
         puccd.curr_e = state.curr_e
         puccd.gmo = np.array(state.gmo)
+        puccd.h1mo = np.array(state.h1mo)
+        puccd.h2mo = np.array(state.h2mo)
         puccd.evs = state.evs
         puccd.stds = state.stds
 
@@ -60,6 +71,17 @@ def rehydrate(data: PairUCCData, state: Optional[PairUCCState]) -> pairUCC:
 def pucc_from_pyscf_str(mol_str: str) -> PairUCCData:
     mol = mole.loads(mol_str)
     puccd = pairUCC.from_pyscf_Mole(mol)
+    return PairUCCData(
+        n_elec_pairs=puccd.n_elec_pairs,
+        h1mo=puccd.h1mo.tolist(),
+        h2mo=puccd.h2mo.tolist(),
+        enuc=puccd.enuc,
+    )
+
+
+@worker.task()
+def pucc_from_fcidump_filepath(filepath: str) -> PairUCCData:
+    puccd = pairUCC.from_FCIDUMP(filepath)
     return PairUCCData(
         n_elec_pairs=puccd.n_elec_pairs,
         h1mo=puccd.h1mo.tolist(),

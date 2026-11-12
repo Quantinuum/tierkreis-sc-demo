@@ -119,9 +119,11 @@ def optimize_orbs() -> Workflow[OptimizeOrbsInputs, OptimizeOrbsOutputs]:
     )
 
 
+class Inputs(NamedTuple):
+    data: TKR[PairUCCData]
+
+
 class Outputs(NamedTuple):
-    exact_energy: TKR[float]
-    # pauli_ham: TKR[dict[str, float]]
     initial_guess: TKR[list[float]]
     # First guess with qiskit
     guess_energy1: TKR[float]
@@ -135,37 +137,22 @@ class Outputs(NamedTuple):
     oo_vqe_energy: TKR[float]
 
 
-def example_1_He() -> Workflow[EmptyModel, Outputs]:
-    wf = Graph(EmptyModel, Outputs)
+def fmo_vqe() -> Workflow[Inputs, Outputs]:
+    wf = Graph(Inputs, Outputs)
     zero = wf.const(0)
-    max_iter_per_step = wf.const(500)
+    max_iter_per_step = wf.const(200)
     max_steps = wf.const(1000)
 
-    # Step 1. Build He atom
-    mol_str = wf.task(build_He_atom())
-
-    # Step 2. Optional FCI energy
-    exact_energy = wf.task(fci_energy(mol_str))
-
-    # Step 3. Initialize a pairUCC object (hard to replicate)
-
-    # Step 4. Get the system Hamiltonian.
-    data = wf.task(pucc_from_pyscf_str(mol_str))
-    # ham = wf.task(pauli_ham(data))
-
-    # Step 5. Print the ansatz circuit
-    # Not yet implemented
-
     # Step 6. Prepare an initial guess for the VQE
-    guess = wf.task(initial_guess(data))
+    guess = wf.task(initial_guess(wf.inputs.data))
 
     # Step 7. Measure expectation value using qiskit
-    compute_energy_output = wf.task(compute_energy_qk(data, guess))
+    compute_energy_output = wf.task(compute_energy_qk(wf.inputs.data, guess))
 
     # Step 8. Compute expectation values
     ev = wf.task(
         expectation_values(
-            data,
+            wf.inputs.data,
             compute_energy_output.state,
         )
     )
@@ -173,7 +160,7 @@ def example_1_He() -> Workflow[EmptyModel, Outputs]:
     vqe_amps = wf.loop(
         optimize_amps(),
         OptimizeAmpsInputs(
-            data,
+            wf.inputs.data,
             compute_energy_output.state,
             guess,
             x_history=wf.const([]),
@@ -184,12 +171,12 @@ def example_1_He() -> Workflow[EmptyModel, Outputs]:
         ),
     )
 
-    vqe_energy = wf.task(compute_energy(data, vqe_amps.params))
+    vqe_energy = wf.task(compute_energy(wf.inputs.data, vqe_amps.params))
 
     vqe_orbs = wf.loop(
         optimize_orbs(),
         OptimizeOrbsInputs(
-            data,
+            wf.inputs.data,
             vqe_amps.state,
             current_iteration=zero,
             maxiter_per_step=max_iter_per_step,
@@ -200,15 +187,13 @@ def example_1_He() -> Workflow[EmptyModel, Outputs]:
 
     oo_expectation_values = wf.task(
         expectation_values(
-            data,
+            wf.inputs.data,
             vqe_orbs.state,
         )
     )
 
     return wf.finish_with_outputs(
         outputs=Outputs(
-            exact_energy,
-            # pauli_ham,
             guess,
             guess_energy1=compute_energy_output.guess_energy,
             guess_energy2=ev.guess_energy2,
