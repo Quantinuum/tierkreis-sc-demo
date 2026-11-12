@@ -1,0 +1,23 @@
+[project]
+name = "tkr-fmo-puccd-worker-impl"
+version = "0.1.0"
+description = "A tierkreis worker implementation."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [ {name = "Your Name", email = "you@example.com"} ]
+dependencies = [
+    "openfermion>=1.8.1",
+    "pyscf>=2.15.0",
+    "qiskit>=2.6.2",
+    "qiskit-aer>=0.18.2",
+    "scipy>=1.18.1",
+    "tierkreis>=3.0.0rc1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+tkr-fmo-puccd-worker = "tkr_fmo_puccd_worker_impl.main:main"
+
