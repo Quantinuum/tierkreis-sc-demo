@@ -20,6 +20,7 @@ def run_counts(
     if compilation == "qfw":
         compiled = compile_qfw(circuit, backend.target)
     elif compilation == "mqt":
+        # Currently neither version work due to the specific gate set used
         # compiled = compile_mqt(circuit, backend.target)
         compiled = backend.compile(circuit, "mqt")
     else:
