@@ -19,6 +19,15 @@ dependencies = [
 
 [dependency-groups]
 dev = ["tierkreis[stubs]==3.0.0rc3", "pyright", "pytest>=8"]
+qfw = [
+    "PyYAML",
+    "jsonschema>=4",
+    "netifaces",
+    "psutil",
+    "paramiko",
+    "rich",
+    "opentelemetry-exporter-otlp-proto-http>=1.44.0",
+]
 
 [build-system]
 requires = ["hatchling"]
