@@ -1,0 +1,19 @@
+{
+  "fcidump": "examples/N2/fcidump_N2_MO.txt",
+  "settings": {
+    "sqd_dim": 10000,
+    "shots": 100000,
+    "quantum_source": "random",
+    "random_seed": 24,
+    "use_reset_mitigation": false,
+    "num_walkers": 4,
+    "iterations": 3,
+    "sbd": {
+      "block": 10,
+      "iteration": 2,
+      "tolerance": 0.0001,
+      "carryover_ratio": 0.1,
+      "carryover_type": 1
+    }
+  }
+}

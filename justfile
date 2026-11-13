@@ -8,12 +8,14 @@ MKL_NUM_THREADS := "1"
 setup:
     uv sync --locked
 
+# Build the protocol-aware SBD MPI worker.
+build-sbd:
+    tkr/workers/sqd_sbd_worker/native/build_sbd.sh
+
 stubs:
     uv run tkr init stubs --worker-directory tkr/workers
-    uv sync --reinstall-package tkr-fmo-control-worker --reinstall-package tkr-fmo-chemistry-worker --reinstall-package tkr-fmo-quantum-worker
+    uv sync --reinstall-package tkr-fmo-control-worker --reinstall-package tkr-fmo-chemistry-worker --reinstall-package tkr-fmo-quantum-worker --reinstall-package tkr-sqd-control-worker --reinstall-package tkr-sqd-quantum-worker --reinstall-package tkr-sqd-sbd-worker
 
-run:
-    uv run tkr run -g tkr.graphs.he4:workflow -i examples/example_3_He4_input.json --profile local --timeout 86400 -o
 
 lint:
     uv run ruff check src tkr/graphs tkr/workers
@@ -22,6 +24,3 @@ lint:
 
 visualize:
     uv run tkr serve
-
-visualize-cluster:
-    docker exec -it --user user-a --workdir /workspace/qfw-container-base/tierkreis-sc-demo slurmctld /opt/openqse/qfw-venv/bin/tkr serve --host 0.0.0.0

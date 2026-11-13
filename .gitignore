@@ -12,3 +12,6 @@ wheels/
 .runtime/
 .pytest_cache/
 .ruff_cache/
+
+tkr/workers/sqd_sbd_worker/native/sbd/
+tkr/workers/sqd_sbd_worker/native/diag

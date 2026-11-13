@@ -26,7 +26,9 @@ poll_interval_secs = 1
 resources = { nodes = 1, cores_per_node = 1 }
 
 [executors.slurm.worker_commands]
-fmo_quantum_worker = ["bash", "tkr/workers/fmo_quantum_worker/launch.sh"]
+fmo_quantum_worker = ["bash", "tkr/qfw/launch.sh", "tkr/workers/fmo_quantum_worker/tkr_fmo_quantum_worker_impl/main.py"]
+sqd_quantum_worker = ["bash", "tkr/qfw/launch.sh", "tkr/workers/sqd_quantum_worker/tkr_sqd_quantum_worker_impl/main.py"]
+sqd_sbd_worker = ["tkr/workers/sqd_sbd_worker/native/diag"]
 
 [runtime_state]
 type = "Sqlite"
@@ -39,7 +41,7 @@ log_format = "compact"
 log_level = "info"
 service_name = "fmo-vqe"
 service_namespace = "openqse"
-otel_endpoint = "http://127.0.0.1:4317"
+otel_endpoint = "http://otel-collector:4317"
 
 [resources]
 paths = ["resource_profiles"]
